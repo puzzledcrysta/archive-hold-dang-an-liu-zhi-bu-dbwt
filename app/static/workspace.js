@@ -93,6 +93,7 @@ async function render() {
   const stage = selected;
   byId('phase').textContent = settings.tabs[stage];
   byId('review').hidden = true;
+  byId('supplement-form').hidden = true;
   for (const link of links) {
     if (link.dataset.module === stage) link.setAttribute('aria-current', 'page');
     else link.removeAttribute('aria-current');
@@ -150,13 +151,32 @@ async function render() {
         return button;
       }]];
       rows = runs;
+    } else if (stage === 'supplements') {
+      const [listing, gate] = await Promise.all([
+        query(`/api/runs/${id}/supplements`), query(`/api/runs/${id}/release`),
+      ]);
+      const state = byId('supplement-state');
+      state.textContent = gate.confirmed
+        ? (gate.all_releasable ? '批次已确认，无待核清补报' : `冻结 ${gate.frozen_keys.length} 件，待差异核清`)
+        : '批次尚未确认，补报通道关闭';
+      state.className = gate.all_releasable ? 'state' : 'state problem';
+      byId('supplement-form').hidden = !gate.confirmed;
+      view = [['序号','seq','num'], ['补报指纹', row => row.supplement_id.slice(0, 9)],
+              ['登记 UTC','created'],
+              ['受影响档案件', row => row.changed_keys.join('、') || '无计量变化'],
+              ['状态', row => el('span', row.frozen ? '待核清冻结' : `已核清 v${row.cleared_version}`,
+                                 row.frozen ? 'state problem' : 'state')]];
+      rows = listing.supplements;
     } else {
-      const timeline = await query(`/api/review/${id}`);
+      const [timeline, gate] = await Promise.all([
+        query(`/api/review/${id}`), query(`/api/runs/${id}/release`),
+      ]);
       view = [['版本','version','num'], ['结论','decision'], ['复核意见','note'], ['登记 UTC','changed']];
       rows = timeline;
       if (ticket === renderEpoch) {
         reviewVersion = timeline[0]?.version || 0;
         byId('review').hidden = false;
+        if (gate.frozen_keys.length) notice(`差异核清前 ${gate.frozen_keys.length} 件档案冻结，重新确认后放行`, true);
       }
     }
     if (ticket === renderEpoch) {
@@ -242,5 +262,17 @@ byId('review').addEventListener('submit', async event => {
     notice(error.message, true);
     if (error.status === 409) await render();
   }
+});
+byId('supplement-form').addEventListener('submit', async event => {
+  event.preventDefault();
+  const id = result.manifest.run_id;
+  const textarea = byId('supplement-csv');
+  try {
+    const payload = await query(`/api/runs/${id}/supplements`, {data: textarea.value});
+    notice(payload.duplicated ? '同一补报已受理，未重复撤回'
+      : `补报已受理：冻结 ${payload.affected.filter(row => row.changed).length} 件，待差异核清`);
+    textarea.value = '';
+    await render();
+  } catch (error) { notice(error.message, true); }
 });
 render();

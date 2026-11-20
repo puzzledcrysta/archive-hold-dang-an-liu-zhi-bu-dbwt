@@ -43,6 +43,11 @@
         <div class="actions"><label>结论 <select id="decision"><option>确认</option><option>退回</option></select></label>
         <button class="btn btn--primary" type="submit">提交复核</button></div>
       </form>
+      <form id="supplement-form" class="panel__body" hidden>
+        <label>留置补报 CSV（列：档案件、留置区段）<textarea id="supplement-csv" rows="3" placeholder="档案件,留置区段&#10;00101,2025-02-20/2025-03-10"></textarea></label>
+        <div class="actions"><button type="submit" class="btn btn--primary">提交留置补报</button>
+        <span id="supplement-state" class="state"></span></div>
+      </form>
     </section>
 
     <section class="panel source" aria-labelledby="input-title">

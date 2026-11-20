@@ -13,6 +13,28 @@ CREATE TABLE IF NOT EXISTS reviews (
   decision TEXT NOT NULL, note TEXT NOT NULL, changed TEXT NOT NULL,
   PRIMARY KEY(run_id,version)
 );
+CREATE TABLE IF NOT EXISTS supplements (
+  run_id TEXT NOT NULL REFERENCES runs(id),
+  supplement_id TEXT NOT NULL,
+  seq INTEGER NOT NULL,
+  payload BLOB NOT NULL,
+  payload_sha256 TEXT NOT NULL,
+  changed INTEGER NOT NULL,
+  frozen INTEGER NOT NULL,
+  cleared_version INTEGER,
+  created TEXT NOT NULL,
+  snapshot TEXT NOT NULL,
+  PRIMARY KEY(run_id,supplement_id)
+);
+CREATE TABLE IF NOT EXISTS supplement_keys (
+  run_id TEXT NOT NULL,
+  supplement_id TEXT NOT NULL,
+  key TEXT NOT NULL,
+  changed INTEGER NOT NULL,
+  baseline_amount TEXT NOT NULL,
+  current_amount TEXT NOT NULL,
+  PRIMARY KEY(run_id,supplement_id,key)
+);
 """
 
 

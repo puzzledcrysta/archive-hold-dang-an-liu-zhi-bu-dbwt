@@ -12,3 +12,12 @@ REASONS = {
 }
 
 REASONS.update({'ARCHIVE_POLICY': '保管版本冲突或缺失', 'ARCHIVE_HOLD': '留置区段无效', 'ARCHIVE_DATES': '日期范围无效', 'DATE': '日期格式无效', 'REV_BLOCKED': '较新来源尚未采信'})
+
+REASONS.update({
+    'SUPPLEMENT_HEADER': '留置补报表头无效',
+    'SUPPLEMENT_WIDTH': '留置补报列数不符',
+    'SUPPLEMENT_EMPTY': '留置补报没有有效记录',
+    'SUPPLEMENT_UNKNOWN': '没有此留置补报',
+    'SUPPLEMENT_UNKNOWN_KEY': '补报档案件不在原批次可采信记录中',
+    'SUPPLEMENT_NOT_CONFIRMED': '批次尚未确认，不接收留置补报',
+})

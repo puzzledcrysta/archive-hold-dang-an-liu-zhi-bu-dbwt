@@ -15,6 +15,7 @@
 | M5 保管台账 | 核对独立清单和各类差异 | `POST /api/reconcile` | `app/modules/reconcile/service.py` | `tests/test_reconcile.py` |
 | M6 留置批次 | 打开历史批次并对原文件复跑 | `POST /api/runs` | `app/modules/runs/service.py` | `tests/test_runs.py` |
 | M7 处置复核 | 登记复核结论并下载证据 | `POST /api/review/{run_id}` | `app/modules/review/decisions.py` | `tests/test_review.py` |
+| M8 留置补报 | 已确认批次接收迟到留置、重算重对账并冻结至核清 | `POST /api/runs/{run_id}/supplements` | `app/modules/supplements/service.py` | `tests/test_supplements.py` |
 
 ## 陷阱登记
 
@@ -39,3 +40,11 @@
 ## 对账
 
 输入 = 计入 + 隔离 + 重传及版本替换 + 空白记录 + 重复表头。按业务键全外连接，缺失一侧与数值为零分别登记。逐笔差值与总差一致。
+
+## 留置补报状态机
+
+1. 仅最新复核为「确认」的批次接收补报；补报内容寻址，重复提交幂等返回。
+2. 补报留置叠加到原记录后重算处置日，计量变化的档案按件冻结，整批重新对账。
+3. 冻结只作用于受影响档案；`release` 闸口逐件给出 `OK / PENDING_RECONCILE / NOT_CONFIRMED`。
+4. 新「确认」复核把在途补报标记 `cleared_version` 并解冻；「退回」清空核清版本并重新冻结。
+5. 原批次结果与全部复核版本不可变，导出证据附带补报清单与放行状态。
